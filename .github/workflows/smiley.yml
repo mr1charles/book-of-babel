@@ -1,24 +1,26 @@
-name: Smiley hunt
-on: { workflow_dispatch: {} }
+name: Smiley hunt (exact)
+on:
+  workflow_dispatch:
+    inputs: { size: { description: 'grid size (5 or 6)', default: '6' } }
 permissions: { contents: write }
 jobs:
   hunt:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 330
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - run: sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
       - run: cd smiley && npm install --no-audit --no-fund
-      - name: Search until a smiley appears (real run)
-        run: cd smiley && node search.mjs
-      - name: Render video of the run
-        run: cd smiley && node render-video.mjs
+      - name: Hunt until the picture matches exactly (real multi-core run)
+        run: cd smiley && node search.mjs ${{ inputs.size }}
+      - name: Render the TikTok video (v1 format)
+        run: cd smiley && node render-v1.mjs out/result.json out/v1-smiley.mp4
       - uses: actions/upload-artifact@v4
         with: { name: smiley-run, path: smiley/out }
       - name: Publish result to the site
         run: |
-          mkdir -p smiley/result && cp smiley/out/result.json smiley/out/smiley.mp4 smiley/result/
+          rm -rf smiley/result && mkdir -p smiley/result && cp smiley/out/result.json smiley/out/v1-smiley.mp4 smiley/result/
           git config user.name mr1charles && git config user.email "181485605+mr1charles@users.noreply.github.com"
-          git add smiley/result && git commit -m "Smiley hunt result" && git push
+          git add smiley/result && git commit -m "Smiley hunt result (exact ${{ inputs.size }}x${{ inputs.size }})" && git push
