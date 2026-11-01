@@ -16,8 +16,9 @@ const pad18 = (n) => String(n).padStart(18, '0');
 const dur = (ms) => ms == null ? '—' : ms < 1 ? (ms * 1000).toFixed(1) + ' µs' : ms < 1000 ? ms.toFixed(2) + ' ms' : ms < 60000 ? (ms / 1000).toFixed(3) + ' s' : (ms / 60000).toFixed(2) + ' min';
 const stamp = (t) => t ? new Date(t).toISOString().replace('T', ' ').replace('Z', '') + ' UTC' : '—';
 const toast = (m) => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 1600); };
-const settings = { rate: 500, anim: 'slide', fs: 19, theme: 'auto', running: true, ...JSON.parse((() => { try { return localStorage.getItem('babel-settings') || '{}'; } catch { return '{}'; } })()) };
+const settings = { rate: 250000, anim: 'slide', fs: 19, theme: 'light', running: true, ...JSON.parse((() => { try { return localStorage.getItem('babel-settings') || '{}'; } catch { return '{}'; } })()) };
 const saveSettings = () => { try { localStorage.setItem('babel-settings', JSON.stringify(settings)); } catch {} };
+if (!settings.v) { settings.v = 2; settings.rate = 250000; settings.theme = 'light'; try { localStorage.setItem('babel-settings', JSON.stringify(settings)); } catch {} }
 if (matchMedia('(prefers-reduced-motion: reduce)').matches && !localStorage.getItem('babel-settings')) settings.anim = 'none';
 const applyTheme = () => { if (settings.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.dataset.theme = settings.theme; };
 applyTheme();
@@ -27,6 +28,8 @@ const A = { store: null, eng: null, world: 0, n: 0, prev: 'GENESIS', inflight: [
 // ---------------------------------------------------------------- boot
 async function boot() {
   A.store = await openStore();
+  const hy = (b) => (b && !b.rgba ? { ...b, rgba: new Uint8Array(C.paintBoard(C.boardSpec(A.world, b.idx), b.startSeq, b.count)) } : b);
+  for (const m of ['get', 'all', 'last', 'byIndex']) { const f = A.store[m]; A.store[m] = async (st, ...r) => { const out = await f(st, ...r); if (st !== 'boards') return out; return Array.isArray(out) ? out.map(hy) : hy(out); }; }
   let w = await A.store.get('meta', 'world');
   if (!w) { w = { k: 'world', v: crypto.getRandomValues(new Uint32Array(1))[0] }; await A.store.put('meta', w); }
   A.world = w.v;
@@ -40,6 +43,7 @@ async function boot() {
   if (!st) A.eng.pending.books.push({ ...A.eng.bookRecord(), created: C.now() });
   buildNav(); route(); startLoop(); if (settings.agents) agentConnect();
   setInterval(persist, 1000);
+  setInterval(async () => { try { const e = await navigator.storage.estimate(); const cap = Math.min((e.quota || 1e9) * 0.8, (settings.capMB || 500) * 1048576); if (settings.running && e.usage > cap) { settings.running = false; saveSettings(); toast('Library full — generation paused'); } } catch {} }, 4000);
   document.addEventListener('visibilitychange', () => { if (document.hidden) persist(); });
   addEventListener('pagehide', persist);
 }
@@ -51,7 +55,7 @@ async function persist() {
     const p = A.eng.drain(); A.inflight = p.ticks; const writes = [];
     if (p.ticks.length) { const e = await C.makeLedgerEntry(A.n, A.prev, A.world, p); writes.push(['ledger', e]); A.n++; A.prev = e.hash; }
     for (const pg of p.pages) { pg.hash = await C.sha256(pg.text); const sig = C.sigOf(pg.text); writes.push(['pages', pg], ['sigs', { idx: pg.idx, sig }]); A.sigs.set(pg.idx, sig); }
-    for (const b of p.boards) { b.hash = await C.hashBoard(b.w, b.h, b.rgba); writes.push(['boards', b]); }
+    for (const b of p.boards) { b.hash = await C.hashBoard(b.w, b.h, b.rgba); const { rgba, ...slim } = b; writes.push(['boards', slim]); }
     for (const b of p.books) writes.push(['books', b]);
     writes.push(['meta', { k: 'state', v: { s: snap, totals, activeMs } }]);
     await A.store.commit(writes); A.inflight = [];
@@ -91,15 +95,17 @@ const ICON = {
   search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5', clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2', media: 'M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6',
   coll: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z', stats: 'M4 20V10M10 20V4M16 20v-8M22 20H2', origin: 'M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5', home: 'M3 11l9-8 9 8M5 10v10h14V10',
 };
-const NAV = [['#/', 'home', 'Home'], ['#/library', 'library', 'The Library'], ['#/canvas', 'canvas', 'The Canvas'], ['#/archive', 'archive', 'The Archive'], ['#/search', 'search', 'The Oracle'], ['#/clock', 'clock', 'Atom Clock'], ['#/media', 'media', 'Media'], ['#/collections', 'coll', 'Collections'], ['#/stats', 'stats', 'Statistics'], ['#/origin', 'origin', 'The Origin']];
+const NAV = [['#/', 'home', 'Home'], ['#/library', 'library', 'The Library'], ['#/canvas', 'canvas', 'The Canvas'], ['#/archive', 'archive', 'The Archive'], ['#/search', 'search', 'The Oracle'], ['#/clock', 'clock', 'Atom Clock'], ['#/media', 'media', 'Media'], ['#/collections', 'coll', 'Collections'], ['#/stats', 'stats', 'Statistics'], ['#/origin', 'origin', 'The Origin'], ['#/more', 'home', 'More']];
 function buildNav() {
   const nl = $('#navlinks'); nl.innerHTML = '';
-  for (const [href, ic, label] of NAV) { const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 24 24'); const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', ICON[ic]); svg.append(p); nl.append(h('a', { href, 'data-h': href }, svg, h('span', {}, label))); }
-  $('#inspclose').onclick = () => $('#app').classList.add('noinsp');
+  for (const [href, ic, label] of NAV) { const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); svg.setAttribute('viewBox', '0 0 24 24'); const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', ICON[ic]); svg.append(p); nl.append(h('a', { href, 'data-h': href, class: ['#/', '#/library', '#/canvas', '#/search', '#/more'].includes(href) ? 'core' + (href === '#/more' ? ' morelink' : '') : 'extra' }, svg, h('span', {}, label))); }
+  $('#inspclose').onclick = () => { A.sheetOpen = false; $('#app').classList.add('noinsp'); };
+  $('#detailsbtn').onclick = () => { A.sheetOpen = !A.sheetOpen; $('#app').classList.toggle('noinsp', !A.sheetOpen); };
 }
 let cleanup = [];
-const setInsp = (...nodes) => { const b = $('#inspbody'); b.replaceChildren(...nodes.flat().filter(Boolean)); $('#app').classList.remove('noinsp'); };
-const hideInsp = () => { $('#app').classList.add('noinsp'); $('#inspbody').replaceChildren(); };
+const small = () => matchMedia('(max-width:980px)').matches;
+const setInsp = (...nodes) => { const b = $('#inspbody'); b.replaceChildren(...nodes.flat().filter(Boolean)); if (small()) { $('#detailsbtn').hidden = false; if (!A.sheetOpen) $('#app').classList.add('noinsp'); } else $('#app').classList.remove('noinsp'); };
+const hideInsp = () => { A.sheetOpen = false; $('#app').classList.add('noinsp'); $('#inspbody').replaceChildren(); $('#detailsbtn').hidden = true; };
 const kv = (k, v, cls) => h('div', { class: 'kv' }, h('div', { class: 'k' }, k), h('div', { class: 'v ' + (cls || '') }, v));
 const crumbs = (...parts) => { const c = $('#crumbs'); c.replaceChildren(...parts.flatMap((p, i) => [i ? h('i', {}, '/') : null, Array.isArray(p) ? h('a', { href: p[1] }, p[0]) : p]).filter((x) => x != null)); };
 const _unused = (...parts) => { const c = $('#crumbs'); c.replaceChildren(...parts.flatMap((p, i) => [i ? h('i', {}, '/') : null, Array.isArray(p) ? h('a', { href: p[1] }, p[0]) : p])); };
@@ -110,7 +116,7 @@ async function route() {
   document.querySelectorAll('#navlinks a').forEach((a) => a.classList.toggle('on', a.dataset.h === '#/' + (seg[0] || '') || (seg[0] === 'page' || seg[0] === 'book') && a.dataset.h === '#/library' || (seg[0] === 'board' || seg[0] === 'atlas') && a.dataset.h === '#/canvas' || seg[0] === 'event' && a.dataset.h === '#/archive' || seg[0] === 'replay' && a.dataset.h === '#/library'));
   const v = $('#view'); v.replaceChildren(); $('#center').scrollTop = 0;
   try {
-    const r = { '': vHome, library: vLibrary, book: vBook, page: vPage, canvas: vCanvas, board: vBoard, atlas: vAtlas, archive: vArchive, event: vEvent, search: vSearch, clock: vClock, media: vMedia, collections: vCollections, stats: vStats, origin: vOrigin, replay: vReplay }[seg[0] || ''];
+    const r = { '': vHome, library: vLibrary, book: vBook, page: vPage, more: vMore, canvas: vCanvas, board: vBoard, atlas: vAtlas, archive: vArchive, event: vEvent, search: vSearch, clock: vClock, media: vMedia, collections: vCollections, stats: vStats, origin: vOrigin, replay: vReplay }[seg[0] || ''];
     if (!r) throw new Error('Unknown address'); hideInsp(); await r(v, seg.slice(1), q);
   } catch (e) { console.error(e); v.replaceChildren(h('div', { class: 'empty' }, 'This address could not be opened: ' + e.message)); }
 }
@@ -149,16 +155,20 @@ function highlighted(text, a, b) { // a..b inclusive offsets
   if (a == null) return [text]; return [text.slice(0, a), h('mark', { id: 'hl' }, text.slice(a, b + 1)), text.slice(b + 1)];
 }
 
+async function vMore(v) {
+  crumbs('More'); v.append(h('h2', {}, 'More'));
+  for (const [href, , label] of NAV.filter((n) => !['#/more', '#/'].includes(n[0]))) v.append(h('a', { href, class: 'row morerow', style: 'font-size:17px;padding:14px 0' }, label, h('span', { class: 'mute' }, '›')));
+}
 // ---------------------------------------------------------------- HOME
 async function vHome(v) {
   crumbs('The Book of Babel');
   const cnt = h('div', { class: 'atom' }), state = h('div', { class: 'lbl', style: 'margin-top:6px' });
   const live = h('div', { class: 'live-txt' });
   v.append(h('div', { class: 'lbl' }, 'An archive of everything that could be generated'), h('h1', { style: 'margin:8px 0 6px' }, 'The Book of Babel'), h('div', { class: 'sub' }, 'An archive of everything that could be generated.'),
-    h('div', { style: 'margin:30px 0 4px' }, h('div', { class: 'lbl' }, 'Atom Second'), cnt, state), live, h('hr'));
+    h('div', { style: 'margin:30px 0 4px' }, h('div', { class: 'lbl' }, 'Atom Second'), cnt, state), h('div', { class: 'toolbar big' }, h('a', { class: 'btn pri', href: '#/library' }, 'Read'), h('a', { class: 'btn', href: '#/search' }, 'Search'), h('a', { class: 'btn', href: '#/canvas' }, 'Canvas')), h('div', { class: 'adv' }, live), h('hr', { class: 'adv' }));
   sub(() => { cnt.textContent = pad18(A.eng.s.head); state.replaceChildren(h('span', { class: 'dot' + (settings.running ? ' live' : '') }), settings.running ? `generating · ${fmt(Math.round(curRate()))} events / s` : 'generation paused'); live.textContent = A.eng.chars.slice(-260).join(''); });
   const books = (await A.store.last('books', 14)).reverse();
-  v.append(h('div', { class: 'lbl', style: 'margin-bottom:8px' }, 'Recently shelved'), h('div', { class: 'spines' }, books.map(spine)));
+  v.append(h('div', { class: 'lbl adv', style: 'margin-bottom:8px' }, 'Recently shelved'), h('div', { class: 'spines adv' }, books.map(spine)));
   const pages = await A.store.last('pages', 8);
   v.append(h('div', { class: 'lbl', style: 'margin:22px 0 4px' }, 'Latest pages written'), ...pages.map((p) => h('a', { href: '#/page/' + p.idx, class: 'row', style: 'grid-template-columns:130px 1fr 110px' }, h('span', { class: 'mono' }, p.id), h('span', { class: 'snip mute', style: 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis' }, p.text.slice(0, 90)), h('span', { class: 'mono mute' }, dur(timesOf(p).wall)))));
   if (!pages.length) v.append(h('div', { class: 'empty' }, 'The first page is still being written. It will appear here when complete.'));
@@ -207,12 +217,13 @@ async function vPage(v, [idx], q) {
   paper.append(h('div', { class: 'hd' }, h('span', {}, book.title), h('span', {}, `CHAPTER ${chapter}`)), txt);
   paper.append(h('div', { class: 'foot' }, h('span', {}, `${book.id} · ${C.ids.chapter(chapter)} · ${C.ids.page(idx)}`), h('span', {}, `— ${pageNo} / ${book.pages} —`), h('span', {}, 'SEED ' + C.ids.seed(spec.seed))));
   paper.append(h('div', { class: 'zone l', title: 'Previous page', onclick: () => idx > first && go(idx - 1) }), h('div', { class: 'zone r', title: 'Next page', onclick: () => idx < last && go(idx + 1) }));
+  let sx = null; paper.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; }, { passive: true }); paper.addEventListener('touchend', (e) => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; sx = null; if (dx < -50 && idx < last) go(idx + 1); else if (dx > 50 && idx > first) go(idx - 1); });
   const prevB = h('button', { class: 'btn', disabled: idx <= first, onclick: () => go(idx - 1) }, '← Prev'), nextB = h('button', { class: 'btn', disabled: idx >= last, onclick: () => go(idx + 1) }, 'Next →');
   const jump = h('input', { type: 'number', min: 1, max: book.pages, value: pageNo, style: 'width:76px', title: 'Jump to page in this book', onchange: (e) => go(first + Math.max(1, Math.min(book.pages, +e.target.value)) - 1) });
   const tb = h('div', { class: 'toolbar' }, prevB, nextB, h('span', { class: 'mute' }, 'page'), jump, bookmarkBtn('page', C.ids.page(idx), '#/page/' + idx, `${book.title} p.${pageNo}`),
-    h('select', { onchange: (e) => { settings.anim = e.target.value; saveSettings(); } }, ['none', 'slide', 'turn'].map((o) => h('option', { value: o, selected: settings.anim === o }, o === 'none' ? 'No animation' : o === 'slide' ? 'Slide' : 'Page turn'))),
-    h('button', { class: 'btn', onclick: () => { settings.fs = Math.max(13, settings.fs - 2); saveSettings(); route(); } }, 'A−'), h('button', { class: 'btn', onclick: () => { settings.fs = Math.min(32, settings.fs + 2); saveSettings(); route(); } }, 'A+'));
-  const sb = h('input', { type: 'search', placeholder: 'find in this page…', style: 'width:150px', oninput: (e) => { const s = e.target.value, t = (p ? p.text : A.eng.chars.join('')); const i = s ? t.indexOf(s) : -1; txt.replaceChildren(...(i < 0 ? [t] : highlighted(t, i, i + s.length - 1))); } });
+    h('select', { class: 'adv', onchange: (e) => { settings.anim = e.target.value; saveSettings(); } }, ['none', 'slide', 'turn'].map((o) => h('option', { value: o, selected: settings.anim === o }, o === 'none' ? 'No animation' : o === 'slide' ? 'Slide' : 'Page turn'))),
+    h('button', { class: 'btn adv', onclick: () => { settings.fs = Math.max(13, settings.fs - 2); saveSettings(); route(); } }, 'A−'), h('button', { class: 'btn adv', onclick: () => { settings.fs = Math.min(32, settings.fs + 2); saveSettings(); route(); } }, 'A+'));
+  const sb = h('input', { type: 'search', class: 'adv', placeholder: 'find in this page…', style: 'width:150px', oninput: (e) => { const s = e.target.value, t = (p ? p.text : A.eng.chars.join('')); const i = s ? t.indexOf(s) : -1; txt.replaceChildren(...(i < 0 ? [t] : highlighted(t, i, i + s.length - 1))); } });
   tb.append(sb);
   v.append(h('div', { class: 'reader' }, tb, paper));
   const renderInsp = () => {
@@ -266,8 +277,8 @@ async function vReplay(v, [kind, idx]) {
   const pb = h('button', { class: 'btn pri', onclick: () => { if (i >= N) setI(0); playing = !playing; pb.textContent = playing ? '❚❚ Pause' : '▶ Play'; last = 0; if (playing) requestAnimationFrame(frame); } }, '▶ Play');
   scrub.oninput = () => setI(+scrub.value);
   const sp = [0.25, 0.5, 1, 2, 5, 10, 25, 50, 100, Infinity];
-  const spBtns = sp.map((s) => h('button', { class: 'btn' + (s === 1 ? ' sel' : ''), onclick: (e) => { speed = s; spBtns.forEach((b) => b.classList.remove('sel')); e.target.classList.add('sel'); draw(); } }, s === Infinity ? 'max' : s + '×'));
-  const custom = h('input', { type: 'number', min: 0.01, step: 'any', placeholder: 'custom ×', style: 'width:90px', onchange: (e) => { if (+e.target.value > 0) { speed = +e.target.value; draw(); } } });
+  const spBtns = sp.map((s) => h('button', { class: 'btn' + (s === 1 ? ' sel' : '') + ([1, 10, Infinity].includes(s) ? '' : ' adv'), onclick: (e) => { speed = s; spBtns.forEach((b) => b.classList.remove('sel')); e.target.classList.add('sel'); draw(); } }, s === Infinity ? 'max' : s + '×'));
+  const custom = h('input', { class: 'adv', type: 'number', min: 0.01, step: 'any', placeholder: 'custom ×', style: 'width:90px', onchange: (e) => { if (+e.target.value > 0) { speed = +e.target.value; draw(); } } });
   v.append(h('div', { class: 'lbl' }, 'Generation replay'), h('h2', {}, rec.id),
     h('div', { style: 'margin:6px 0 12px;display:flex;gap:8px;flex-wrap:wrap' }, h('span', { class: 'pill ' + (reproOK ? 'ok' : 'warn') }, reproOK ? 'seed reproduces stored content exactly' : 'REPRODUCTION MISMATCH'), h('span', { class: 'pill ' + (complete ? 'ok' : 'warn') }, complete ? 'ledger timing complete' : `ledger timing incomplete: ${fmt(covered)} of ${fmt(N)} events have ticks`)),
     view, status, scrub,
@@ -493,7 +504,7 @@ async function vOrigin(v) {
   crumbs('The Origin'); v.append(h('h1', {}, 'The Origin'), h('div', { class: 'sub' }, 'Where the Atom Seconds are made.'));
   const eng = [['Text Engine', true, 'One character per event; six alphabets; per-page randomised length, mode and layout.'], ['Pixel Engine', true, 'One RGBA pixel per event on randomly sized boards (8–64 px); boards seal at capacity.'], ['Number / Symbol', false, 'Covered today only as the “math” and “unicode” text alphabets; no separate engine.'], ['Mathematics', false, 'Not built: needs a symbolic expression tree and verifier.'], ['Science', false, 'Not built.'], ['DNA / Biology', false, 'Not built.'], ['Image / Art (beyond pixels)', false, 'Not built.'], ['Audio · Video · Code · 3D', false, 'Not built; the engine registry is the planned extension point.']];
   const t = h('table', {}, h('thead', {}, h('tr', {}, ['Engine', 'Status', 'Notes'].map((x) => h('th', {}, x))))), tb = h('tbody'); for (const [n, on, d] of eng) tb.append(h('tr', {}, h('td', {}, n), h('td', {}, h('span', { class: 'pill ' + (on ? 'ok' : '') }, on ? 'running' : 'not implemented')), h('td', { class: 'mute' }, d))); t.append(tb); v.append(h('hr'), t);
-  const rate = h('select', { onchange: (e) => { settings.rate = +e.target.value; saveSettings(); } }, [1, 10, 100, 500, 1000, 10000, 100000, 0].map((r) => h('option', { value: r, selected: settings.rate === r }, r ? fmt(r) + ' events / s' : 'maximum (as fast as safely possible)')));
+  const rate = h('select', { onchange: (e) => { settings.rate = +e.target.value; saveSettings(); } }, [10, 100, 1000, 10000, 100000, 250000, 1000000, 0].map((r) => h('option', { value: r, selected: settings.rate === r }, r ? fmt(r) + ' events / s' : 'maximum (≈ millions/s — fills storage in minutes)')));
   const theme = h('select', { onchange: (e) => { settings.theme = e.target.value; saveSettings(); applyTheme(); } }, ['auto', 'light', 'dark'].map((o) => h('option', { value: o, selected: settings.theme === o }, o)));
   v.append(h('h3', { style: 'margin-top:26px' }, 'Controls'), h('div', { class: 'toolbar' }, h('button', { class: 'btn pri', onclick: (e) => { settings.running = !settings.running; saveSettings(); e.target.textContent = settings.running ? '❚❚ Pause' : '▶ Resume'; } }, settings.running ? '❚❚ Pause' : '▶ Resume'), rate, h('span', { class: 'mute' }, 'theme'), theme),
     h('p', { class: 'mute', style: 'font-size:12.5px;max-width:72ch' }, 'Generation runs in this tab in ≤6 ms slices so the interface never blocks. It cannot run in the background; if your target rate is more than this device can sustain, the shortfall is dropped, not back-filled, so recorded timestamps stay truthful. Randomness: the world seed is drawn from the OS secure RNG once; every output is then a deterministic function of (world seed, event number), which is what makes exact reproduction possible.'),
