@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Smiley Hunt — The Book of Babel</title>
+<style>:root{--bg:#F4F0E7;--ink:#24231F;--mute:#77736B;--line:#D8D0C2;--brass:#A48753;--green:#526B59}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif}.w{max-width:760px;margin:0 auto;padding:22px 18px 60px}
+.m{font:12px ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}h1{font:500 40px/1.1 'Cormorant Garamond',Georgia,serif;margin:6px 0}canvas{width:min(100%,360px);aspect-ratio:1;image-rendering:pixelated;border:6px solid var(--ink);display:block;background:#fff}
+.n{font:44px ui-monospace,monospace;font-variant-numeric:tabular-nums;word-break:break-all}.row{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin:18px 0}.btn{border:1px solid var(--line);background:none;padding:10px 16px;border-radius:3px;font-size:15px;cursor:pointer;margin:0 8px 8px 0}.btn.p{background:#292720;color:#EDE6D6}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left}a{color:inherit}.ok{color:var(--green)}video{width:100%;border:1px solid var(--line)}</style></head><body><div class="w">
+<div class="m"><a href="../">The Book of Babel</a> / Smiley hunt</div><h1>Random 9×9 black &amp; white — until a smiley appears</h1>
+<p style="color:var(--mute)">Every attempt is 81 fresh random pixels. A “smiley” here means the 33 face cells (eyes, mouth and the clear space between) all match; the other 48 cells are free. Odds per attempt: <b>1 in 8,589,934,592</b>.</p>
+<div class="row"><div><canvas id="c" width="9" height="9"></canvas></div><div><div class="m" id="st">ready</div><div class="n" id="n">0</div><div class="m">attempts</div><div style="margin-top:10px"><span class="m">elapsed</span> <b id="t">0.0 s</b> · <span class="m">speed</span> <b id="r">–</b></div><div style="margin-top:10px"><span class="m">chance of having found one by now</span> <b id="p">0%</b></div><div style="margin-top:10px"><span class="m">expected total time on this device</span> <b id="e">–</b></div></div></div>
+<button class="btn p" id="go">▶ Start hunting</button><button class="btn" id="rec">⏺ Record video of the hunt</button><a class="btn" id="dl" style="display:none" download="smiley-hunt.webm">⭳ Download recording</a>
+<h3>The same hunt, run on GitHub</h3><div id="gh" style="color:var(--mute)">A GitHub Actions run is searching with a recorded seed and rendering an MP4 …</div>
+<h3>Why not a full 9×9 face?</h3><table><thead><tr><th>Cells that must match</th><th>Attempts expected</th><th>At 50M / s</th></tr></thead><tbody>
+<tr><td>9 (eyes + mouth only)</td><td>512</td><td>instant</td></tr><tr><td>27</td><td>134 million</td><td>3 seconds</td></tr><tr><td><b>33 (this page)</b></td><td><b>8.6 billion</b></td><td><b>≈ 3 minutes</b></td></tr><tr><td>45</td><td>35 trillion</td><td>8 days</td></tr><tr><td>All 81 (one exact picture)</td><td>2.4 × 10²⁴</td><td>≈ 1.5 billion years</td></tr></tbody></table>
+<p style="color:var(--mute);font-size:13px">Luck matters: the time is a random draw, not a countdown. Half of runs finish within 0.69× the expected time; one in a hundred takes over 4.6×.</p></div>
+<script type="module">
+import * as S from './smiley-core.js';
+const $=id=>document.getElementById(id),c=$('c'),g=c.getContext('2d'),fmt=n=>Math.round(n).toLocaleString('en-US');
+const draw=w=>{const im=g.createImageData(9,9);for(let i=0;i<81;i++){const v=S.cell(w,i)?0:255;im.data.set([v,v,v,255],i*4)}g.putImageData(im,0,0)};
+let wk=null,seed=0,rate=0,done=false;
+const P=S.PROBABILITY;
+function start(){seed=crypto.getRandomValues(new Uint32Array(1))[0];wk=new Worker('worker.js',{type:'module'});$('go').textContent='❚❚ Stop';$('st').textContent='hunting · seed '+seed.toString(16);done=false;
+ wk.onmessage=({data:d})=>{draw(d.words);$('n').textContent=fmt(d.n+(d.type==='found'?1:0));$('t').textContent=(d.ms/1000).toFixed(1)+' s';rate=d.n/(d.ms/1000);$('r').textContent=(rate/1e6).toFixed(1)+'M / s';
+  $('p').textContent=(100*(1-Math.exp(-d.n*P))).toFixed(1)+'%';$('e').textContent=((1/P)/rate/60).toFixed(1)+' min';
+  if(d.type==='found'){done=true;$('st').innerHTML='<span class="ok">FOUND — a smiley, attempt #'+fmt(d.n+1)+'</span>';$('go').textContent='▶ Hunt again';wk.terminate();wk=null;setTimeout(stopRec,1500)}}; wk.postMessage({cmd:'start',seed});}
+$('go').onclick=()=>{if(wk){wk.terminate();wk=null;$('go').textContent='▶ Start hunting';$('st').textContent='stopped';}else start()};
+let mr=null,chunks=[];function stopRec(){if(mr&&mr.state!=='inactive')mr.stop()}
+$('rec').onclick=()=>{ if(mr&&mr.state==='recording'){stopRec();return} const big=document.createElement('canvas');big.width=720;big.height=720;const bg=big.getContext('2d');bg.imageSmoothingEnabled=false;
+ const loop=()=>{bg.fillStyle='#F4F0E7';bg.fillRect(0,0,720,720);bg.drawImage(c,60,40,600,600);bg.fillStyle='#24231F';bg.font='28px monospace';bg.fillText('attempt #'+$('n').textContent+'   '+$('t').textContent,60,690);if(mr&&mr.state==='recording')requestAnimationFrame(loop)};
+ mr=new MediaRecorder(big.captureStream(30),{mimeType:'video/webm'});chunks=[];mr.ondataavailable=e=>chunks.push(e.data);mr.onstop=()=>{const a=$('dl');a.href=URL.createObjectURL(new Blob(chunks,{type:'video/webm'}));a.style.display='inline-block';$('rec').textContent='⏺ Record video of the hunt'};
+ mr.start();$('rec').textContent='⏹ Stop recording';loop();if(!wk)start()};
+fetch('result/result.json').then(r=>r.ok?r.json():Promise.reject()).then(R=>{$('gh').innerHTML=`<div class="ok"><b>Found on GitHub Actions:</b> attempt #${fmt(R.attempts)} in ${(R.ms/1000).toFixed(1)} s (${(R.perSecond/1e6).toFixed(0)}M attempts/s, seed ${R.seedHex}).</div><video controls src="result/smiley.mp4" style="margin-top:10px"></video>`}).catch(()=>{});
+</script></body></html>
