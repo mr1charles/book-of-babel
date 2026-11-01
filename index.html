@@ -1,0 +1,65 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Book of Babel</title><meta name="description" content="An archive of everything that could be generated. Every character and pixel is a recorded generation event you can search, inspect and replay.">
+<link rel="icon" href="img/icon.svg"><meta property="og:title" content="The Book of Babel"><meta property="og:description" content="An archive of everything that could be generated.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F4F0E7;--bg2:#EAE3D5;--ink:#24231F;--mute:#77736B;--line:#D8D0C2;--dark:#292720;--brass:#A48753;--paper:#FBF8F1;--serif:'Cormorant Garamond',Georgia,serif;--sans:Inter,system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+@media(prefers-color-scheme:dark){:root{--bg:#191916;--bg2:#24231D;--ink:#E8E0D2;--mute:#969084;--line:#38362E;--dark:#12120f;--brass:#AA9367;--paper:#201f1a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans)}a{color:inherit}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header{border-bottom:1px solid var(--line)}header .wrap{display:flex;justify-content:space-between;align-items:center;height:60px}
+.brand{display:flex;gap:10px;align-items:center;font:500 22px var(--serif);text-decoration:none}.brand svg{color:var(--brass)}
+nav a{font-size:14px;color:var(--mute);text-decoration:none;margin-left:22px}nav a:hover{color:var(--ink)}
+.lbl{font:11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.hero{padding:84px 0 56px}h1{font:500 clamp(44px,8vw,84px)/1 var(--serif);margin:12px 0 14px;letter-spacing:-.01em}
+.sub{font:italic 400 clamp(20px,3vw,28px)/1.3 var(--serif);color:var(--mute);max-width:30ch}
+.btn{display:inline-block;border:1px solid var(--line);border-radius:3px;padding:10px 18px;text-decoration:none;font-size:15px;transition:.12s}.btn:hover{border-color:var(--brass)}
+.btn.pri{background:var(--dark);color:#EDE6D6;border-color:var(--dark)}.btn.pri:hover{background:#3a372d}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}
+.shot{border:1px solid var(--line);box-shadow:0 20px 40px -24px rgba(41,39,32,.5);margin:10px 0 70px;background:var(--bg2)}.shot img{display:block;width:100%;height:auto}
+section{border-top:1px solid var(--line);padding:46px 0}h2{font:500 34px/1.1 var(--serif);margin:0 0 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0;border-left:1px solid var(--line);border-top:1px solid var(--line)}
+.grid>div{padding:20px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.grid h3{font:500 22px var(--serif);margin:6px 0 6px}.grid p{margin:0;color:var(--mute);font-size:14.5px}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:10px 8px;text-align:left;vertical-align:top}th{font:11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mute);font-weight:400}
+.pill{font:11px var(--mono);border:1px solid var(--line);padding:1px 7px;border-radius:2px;color:var(--mute);white-space:nowrap}.ok{color:#526B59;border-color:#526B59}.warn{color:#9A4A3F;border-color:#9A4A3F}
+pre{background:var(--bg2);border:1px solid var(--line);padding:14px;overflow:auto;font:13px var(--mono)}
+footer{border-top:1px solid var(--line);padding:30px 0;color:var(--mute);font-size:13px}
+</style></head><body>
+<header><div class="wrap"><a class="brand" href="./"><svg viewBox="0 0 64 64" width="26" height="26"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M10 54h44"/><path d="M16 54V42h32v12"/><path d="M21 42V32h22v10"/><path d="M26 32V24h12v8"/><path d="M29 24v-7h6v7"/><path d="M32 17v-6"/></g></svg>Book of Babel</a><nav><a href="#how">How it works</a><a href="#get">Get it</a><a href="#agents">AI agents</a><a href="#honest">Honest limits</a></nav></div></header>
+<div class="wrap">
+<div class="hero"><div class="lbl">An infinite library of everything that could be generated</div><h1>The Book of Babel</h1><div class="sub">An archive of everything that could be generated.</div>
+<div class="cta"><a class="btn pri" href="app/">Open the library →</a><a class="btn" href="#get">Download for Android / Linux</a></div></div>
+<div class="shot"><img src="img/reader.jpg" alt="A generated page open in the Book of Babel reader, with its generation record in the inspector" width="1254" height="619"></div>
+
+<section id="how"><div class="lbl">How it works</div><h2>Every page has a birth certificate.</h2>
+<p style="max-width:66ch">One <b>Atom Second</b> is one generation event: a single character is written onto a page and a single pixel is placed on a board. Each event is recorded in an append-only, hash-chained ledger with its real timestamp. Because every output is computed from the world seed and the event number, any page can be re-generated and checked exactly &mdash; then replayed, character by character, at the pace it was originally written.</p>
+<div class="grid" style="margin-top:26px">
+<div><div class="lbl">The Library</div><h3>Books &amp; pages</h3><p>Random titles, lengths, chapters and alphabets. Page-turn reader with a full generation record for every page.</p></div>
+<div><div class="lbl">The Canvas</div><h3>Pixel boards</h3><p>One random RGBA pixel per event on boards that seal at capacity and start anew. Pan, zoom, inspect any pixel&rsquo;s event.</p></div>
+<div><div class="lbl">The Oracle</div><h3>Search what exists</h3><p>Exact search of the real archive, plus the true odds for text that has never been generated. No invented matches.</p></div>
+<div><div class="lbl">Replay</div><h3>Watch it being made</h3><p>Scrub the original generation of any page or board. Replay speed never rewrites recorded times.</p></div>
+<div><div class="lbl">The Archive</div><h3>Verifiable ledger</h3><p>Inspect any event and verify the hash chain. Wall-clock, idle and compute time are kept separate.</p></div>
+<div><div class="lbl">Downloads</div><h3>Take pages with you</h3><p>Export archived pages up to a size you choose, from megabytes to gigabytes, or a tiny seed pack that regenerates all of it.</p></div>
+</div></section>
+
+<section id="get"><div class="lbl">Get it</div><h2>Everywhere, honestly labelled.</h2>
+<table><thead><tr><th>Platform</th><th>How</th><th>Status</th></tr></thead><tbody>
+<tr><td>Web &amp; PWA</td><td><a href="app/">Open the app</a> &mdash; installable from your browser menu</td><td><span class="pill ok">working</span></td></tr>
+<tr><td>Android</td><td><a href="downloads/BookOfBabel-debug.apk">BookOfBabel-debug.apk</a> (3.8 MB, debug-signed; allow &ldquo;install unknown apps&rdquo;)</td><td><span class="pill warn">builds, not device-tested</span></td></tr>
+<tr><td>Linux</td><td>Source bundle includes <code>babel-linux</code>, which opens the app in its own window</td><td><span class="pill ok">launcher</span></td></tr>
+<tr><td>iOS</td><td>Xcode project generated in the source bundle; build &amp; sign it on a Mac</td><td><span class="pill warn">untested</span></td></tr>
+<tr><td>Source</td><td><a href="downloads/book-of-babel-source.tar.gz">book-of-babel-source.tar.gz</a></td><td><span class="pill ok">8 passing tests</span></td></tr></tbody></table>
+<p class="mute" style="color:var(--mute);font-size:14px">Your library lives in your own browser or device storage. Nothing is uploaded; there are no accounts. Generation runs only while the app is open.</p></section>
+
+<section id="agents"><div class="lbl">For AI agents</div><h2>Let an agent read your archive.</h2>
+<p style="max-width:66ch">A small local MCP bridge lets agents search pages, fetch generation records and verify the ledger. It is off until you switch it on in the app&rsquo;s <i>Origin</i> screen, listens on 127.0.0.1 only, and agents can&rsquo;t change generation unless you allow it separately.</p>
+<pre>node babel-mcp.mjs                                   # HTTP  http://127.0.0.1:8803/mcp
+claude mcp add babel -- node babel-mcp.mjs --stdio   # Claude Code</pre>
+<p><a class="btn" href="downloads/babel-mcp.mjs">Download babel-mcp.mjs</a></p></section>
+
+<section id="honest"><div class="lbl">Honest limits</div><h2>What this is not.</h2>
+<p style="max-width:66ch">It does not contain every possible book; it contains what it has actually generated, and says so when a search finds nothing. Mathematics, science, DNA, audio and video engines, cross-device sync and native mobile apps are not built yet. The ledger detects corruption and edits, not a complete rewrite.</p></section>
+</div>
+<footer><div class="wrap">The Book of Babel &middot; after Borges, and the tower that never finished.</div></footer>
+</body></html>

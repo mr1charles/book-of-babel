@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Book of Babel</title>
+<meta name="theme-color" content="#292720">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head><body>
+<div id="app">
+  <nav id="index" aria-label="The Index">
+    <a class="brand" href="#/"><svg viewBox="0 0 64 64" width="26" height="26"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M10 54h44"/><path d="M16 54V42h32v12"/><path d="M21 42V32h22v10"/><path d="M26 32V24h12v8"/><path d="M29 24v-7h6v7"/><path d="M32 17v-6"/></g></svg><span>Book of Babel</span></a>
+    <div id="navlinks"></div>
+    <div class="navfoot"><div class="lbl">ATOM SECOND</div><div id="navcount" class="mono">—</div><div id="navstate" class="lbl"></div></div>
+  </nav>
+  <main id="center"><div id="crumbs" class="crumbs"></div><div id="view"></div></main>
+  <aside id="inspector"><div class="insp-head"><span class="lbl">INSPECTOR</span><button id="inspclose" class="ghost" title="Collapse (Esc)">×</button></div><div id="inspbody"></div></aside>
+</div>
+<div id="toast" role="status"></div>
+<script type="module" src="app.js"></script>
+</body></html>
