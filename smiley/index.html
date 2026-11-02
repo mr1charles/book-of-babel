@@ -1,31 +1,33 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Smiley Hunt — The Book of Babel</title>
-<style>:root{--bg:#F4F0E7;--ink:#24231F;--mute:#77736B;--line:#D8D0C2;--brass:#A48753;--green:#526B59}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif}.w{max-width:760px;margin:0 auto;padding:22px 18px 60px}
-.m{font:12px ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}h1{font:500 40px/1.1 'Cormorant Garamond',Georgia,serif;margin:6px 0}canvas{width:min(100%,360px);aspect-ratio:1;image-rendering:pixelated;border:6px solid var(--ink);display:block;background:#fff}
-.n{font:44px ui-monospace,monospace;font-variant-numeric:tabular-nums;word-break:break-all}.row{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin:18px 0}.btn{border:1px solid var(--line);background:none;padding:10px 16px;border-radius:3px;font-size:15px;cursor:pointer;margin:0 8px 8px 0}.btn.p{background:#292720;color:#EDE6D6}
-table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left}a{color:inherit}.ok{color:var(--green)}video{width:100%;border:1px solid var(--line)}</style></head><body><div class="w">
-<div class="m"><a href="../">The Book of Babel</a> / Smiley hunt</div><h1>Random 9×9 black &amp; white — until a smiley appears</h1>
-<p style="color:var(--mute)">Every attempt is 81 fresh random pixels. A “smiley” here means the 33 face cells (eyes, mouth and the clear space between) all match; the other 48 cells are free. Odds per attempt: <b>1 in 8,589,934,592</b>.</p>
-<div class="row"><div><canvas id="c" width="9" height="9"></canvas></div><div><div class="m" id="st">ready</div><div class="n" id="n">0</div><div class="m">attempts</div><div style="margin-top:10px"><span class="m">elapsed</span> <b id="t">0.0 s</b> · <span class="m">speed</span> <b id="r">–</b></div><div style="margin-top:10px"><span class="m">chance of having found one by now</span> <b id="p">0%</b></div><div style="margin-top:10px"><span class="m">expected total time on this device</span> <b id="e">–</b></div></div></div>
-<button class="btn p" id="go">▶ Start hunting</button><button class="btn" id="rec">⏺ Record video of the hunt</button><a class="btn" id="dl" style="display:none" download="smiley-hunt.webm">⭳ Download recording</a>
-<h3>The same hunt, run on GitHub</h3><div id="gh" style="color:var(--mute)">A GitHub Actions run is searching with a recorded seed and rendering an MP4 …</div>
-<h3>Why not a full 9×9 face?</h3><table><thead><tr><th>Cells that must match</th><th>Attempts expected</th><th>At 50M / s</th></tr></thead><tbody>
-<tr><td>9 (eyes + mouth only)</td><td>512</td><td>instant</td></tr><tr><td>27</td><td>134 million</td><td>3 seconds</td></tr><tr><td><b>33 (this page)</b></td><td><b>8.6 billion</b></td><td><b>≈ 3 minutes</b></td></tr><tr><td>45</td><td>35 trillion</td><td>8 days</td></tr><tr><td>All 81 (one exact picture)</td><td>2.4 × 10²⁴</td><td>≈ 1.5 billion years</td></tr></tbody></table>
-<p style="color:var(--mute);font-size:13px">Luck matters: the time is a random draw, not a countdown. Half of runs finish within 0.69× the expected time; one in a hundred takes over 4.6×.</p></div>
+<style>:root{--bg:#F4F0E7;--ink:#24231F;--mute:#77736B;--line:#D8D0C2;--green:#526B59}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Inter,system-ui,sans-serif}.w{max-width:780px;margin:0 auto;padding:22px 18px 60px}
+.m{font:12px ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}h1{font:500 40px/1.1 Georgia,serif;margin:6px 0}canvas{width:min(100%,300px);aspect-ratio:1;image-rendering:pixelated;border:6px solid var(--ink);display:block;background:#fff}
+.n{font:38px ui-monospace,monospace;font-variant-numeric:tabular-nums;word-break:break-all}.row{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin:18px 0}.btn,select{border:1px solid var(--line);background:none;padding:10px 16px;border-radius:3px;font-size:15px;cursor:pointer;margin:0 8px 8px 0}.btn.p{background:#292720;color:#EDE6D6}
+table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left}a{color:inherit}.ok{color:var(--green)}video{width:100%;max-width:360px;border:1px solid var(--line)}</style></head><body><div class="w">
+<div class="m"><a href="../">The Book of Babel</a> / Smiley hunt</div><h1>Generate a smiley from pure random pixels</h1>
+<p style="color:var(--mute)">Every try is a fresh random black &amp; white picture. The hunt stops only when a try is <b>exactly</b> the target picture — every cell identical, nothing left free. Your browser does it, using all your CPU threads.</p>
+<div class="row"><div><div class="m">target</div><canvas id="tg"></canvas></div><div><div class="m">current try</div><canvas id="c"></canvas></div><div style="min-width:220px"><div class="m" id="st">ready</div><div class="n" id="n">0</div><div class="m">tries</div>
+<p><span class="m">time</span> <b id="t">0.0 s</b> · <span class="m">speed</span> <b id="r">–</b><br><span class="m">chance it should be done by now</span> <b id="p">0%</b><br><span class="m">typical wait on this device</span> <b id="e">–</b></p></div></div>
+<select id="sz"><option value="5">5×5 (about 1 in 33 million)</option><option value="6">6×6 (about 1 in 69 billion)</option></select><button class="btn p" id="go">▶ Start hunting</button>
+<h3>The same hunt, run on GitHub</h3><div id="gh" style="color:var(--mute)">loading…</div>
+<h3>Why only 5×5 and 6×6?</h3><table><thead><tr><th>Picture</th><th>Odds per try</th><th>Typical time on GitHub’s 4 cores (≈400M tries/s)</th></tr></thead><tbody>
+<tr><td>5×5</td><td>1 in 33.5 million</td><td>0.1 s</td></tr><tr><td>6×6</td><td>1 in 68.7 billion</td><td>≈ 3 minutes</td></tr><tr><td>7×7</td><td>1 in 563 trillion</td><td>≈ 16 days</td></tr><tr><td>9×9</td><td>1 in 2.4 × 10²⁴</td><td>≈ 190 million years</td></tr></tbody></table>
+<p style="color:var(--mute);font-size:13px">It’s a lottery, not a countdown: half of runs finish within 0.69× the typical time, one in ten takes over 2.3×. Tries come from a seeded counter-based hash (seed from your device’s secure random source), so every try is reproducible and checkable.</p></div>
 <script type="module">
-import * as S from './smiley-core.js';
-const $=id=>document.getElementById(id),c=$('c'),g=c.getContext('2d'),fmt=n=>Math.round(n).toLocaleString('en-US');
-const draw=w=>{const im=g.createImageData(9,9);for(let i=0;i<81;i++){const v=S.cell(w,i)?0:255;im.data.set([v,v,v,255],i*4)}g.putImageData(im,0,0)};
-let wk=null,seed=0,rate=0,done=false;
-const P=S.PROBABILITY;
-function start(){seed=crypto.getRandomValues(new Uint32Array(1))[0];wk=new Worker('worker.js',{type:'module'});$('go').textContent='❚❚ Stop';$('st').textContent='hunting · seed '+seed.toString(16);done=false;
- wk.onmessage=({data:d})=>{draw(d.words);$('n').textContent=fmt(d.n+(d.type==='found'?1:0));$('t').textContent=(d.ms/1000).toFixed(1)+' s';rate=d.n/(d.ms/1000);$('r').textContent=(rate/1e6).toFixed(1)+'M / s';
-  $('p').textContent=(100*(1-Math.exp(-d.n*P))).toFixed(1)+'%';$('e').textContent=((1/P)/rate/60).toFixed(1)+' min';
-  if(d.type==='found'){done=true;$('st').innerHTML='<span class="ok">FOUND — a smiley, attempt #'+fmt(d.n+1)+'</span>';$('go').textContent='▶ Hunt again';wk.terminate();wk=null;setTimeout(stopRec,1500)}}; wk.postMessage({cmd:'start',seed});}
-$('go').onclick=()=>{if(wk){wk.terminate();wk=null;$('go').textContent='▶ Start hunting';$('st').textContent='stopped';}else start()};
-let mr=null,chunks=[];function stopRec(){if(mr&&mr.state!=='inactive')mr.stop()}
-$('rec').onclick=()=>{ if(mr&&mr.state==='recording'){stopRec();return} const big=document.createElement('canvas');big.width=720;big.height=720;const bg=big.getContext('2d');bg.imageSmoothingEnabled=false;
- const loop=()=>{bg.fillStyle='#F4F0E7';bg.fillRect(0,0,720,720);bg.drawImage(c,60,40,600,600);bg.fillStyle='#24231F';bg.font='28px monospace';bg.fillText('attempt #'+$('n').textContent+'   '+$('t').textContent,60,690);if(mr&&mr.state==='recording')requestAnimationFrame(loop)};
- mr=new MediaRecorder(big.captureStream(30),{mimeType:'video/webm'});chunks=[];mr.ondataavailable=e=>chunks.push(e.data);mr.onstop=()=>{const a=$('dl');a.href=URL.createObjectURL(new Blob(chunks,{type:'video/webm'}));a.style.display='inline-block';$('rec').textContent='⏺ Record video of the hunt'};
- mr.start();$('rec').textContent='⏹ Stop recording';loop();if(!wk)start()};
-fetch('result/result.json').then(r=>r.ok?r.json():Promise.reject()).then(R=>{$('gh').innerHTML=`<div class="ok"><b>Found on GitHub Actions:</b> attempt #${fmt(R.attempts)} in ${(R.ms/1000).toFixed(1)} s (${(R.perSecond/1e6).toFixed(0)}M attempts/s, seed ${R.seedHex}).</div><video controls src="result/smiley.mp4" style="margin-top:10px"></video>`}).catch(()=>{});
+import { makeHunt, PRESETS } from './smiley-core.js';
+const $=id=>document.getElementById(id),fmt=n=>Math.round(n).toLocaleString('en-US');
+const draw=(cv,H,cell)=>{cv.width=cv.height=H.N;const g=cv.getContext('2d'),im=g.createImageData(H.N,H.N);for(let i=0;i<H.N*H.N;i++){const v=cell(i)?0:255;im.data.set([v,v,v,255],i*4)}g.putImageData(im,0,0)};
+let ws=[],run=0;
+function stop(){ws.forEach(w=>w.terminate());ws=[];run++;$('go').textContent='▶ Start hunting'}
+function start(){stop();const my=run,H=makeHunt(PRESETS[+$('sz').value]),seed=crypto.getRandomValues(new Uint32Array(1))[0],T=Math.min(navigator.hardwareConcurrency||4,8),CH=H.N===5?2e6:2e7;
+ draw($('tg'),H,i=>H.target(i));$('go').textContent='❚❚ Stop';$('st').textContent='hunting · seed '+seed.toString(16);
+ let next=0,best=Infinity,processed=0;const out=new Set(),t0=performance.now();let lastN=0;
+ const ui=setInterval(()=>{if(my!==run){clearInterval(ui);return}const el=(performance.now()-t0)/1000,rate=processed/Math.max(el,.001);const n=Math.min(lastN,(next)*CH);$('n').textContent=fmt(processed);$('t').textContent=el.toFixed(1)+' s';$('r').textContent=(rate/1e6).toFixed(0)+'M / s';$('p').textContent=(100*(1-Math.exp(-processed/H.expectedTries))).toFixed(1)+'%';$('e').textContent=fmtT(H.expectedTries/Math.max(rate,1));const w=H.words(seed,Math.floor(Math.random()*Math.max(processed,1)));draw($('c'),H,i=>H.cell(w,i))},60);
+ const fmtT=s=>s<90?s.toFixed(1)+' s':s<5400?(s/60).toFixed(1)+' min':s<172800?(s/3600).toFixed(1)+' h':(s/86400).toFixed(0)+' days';
+ const assign=w=>{if(next*CH>best)return;const from=next++*CH;out.add(from);w.postMessage({from,to:from+CH})};
+ for(let i=0;i<T;i++){const w=new Worker('worker.js',{type:'module'});ws.push(w);w.onmessage=({data:d})=>{if(my!==run)return;if(d.ready)return assign(w);out.delete(d.from);processed+=CH;if(d.found>=0)best=Math.min(best,d.found);
+  if(best<Infinity&&![...out].some(s=>s<=best)){clearInterval(ui);const ms=performance.now()-t0,ww=H.words(seed,best);draw($('c'),H,i=>H.cell(ww,i));let same=true;for(let k=0;k<H.N*H.N;k++)if(H.cell(ww,k)!==H.target(k))same=false;
+   $('st').innerHTML='<span class="ok">FOUND — identical to the target: '+(same?'verified':'MISMATCH')+'</span>';$('n').textContent=fmt(best+1);$('t').textContent=(ms/1000).toFixed(1)+' s';stop();$('go').textContent='▶ Hunt again';return}
+  assign(w)};w.postMessage({init:1,rows:H.rows,seed})}}
+$('go').onclick=()=>{ws.length?stop():start()};draw($('tg'),makeHunt(PRESETS[5]),i=>makeHunt(PRESETS[5]).target(i));
+fetch('result/result.json').then(r=>r.ok?r.json():Promise.reject()).then(R=>{$('gh').innerHTML=`<div class="ok"><b>Found on GitHub Actions:</b> exact ${R.size}×${R.size} smiley on try ${fmt(R.attempts)} after ${(R.ms/1000).toFixed(1)} s (${(R.perSecond/1e6).toFixed(0)}M tries/s on ${R.threads} threads). The first picture and the found picture are identical.</div><video controls playsinline src="result/v1-smiley.mp4" style="margin-top:10px"></video>`}).catch(()=>{$('gh').textContent='No GitHub run published yet.'});
 </script></body></html>

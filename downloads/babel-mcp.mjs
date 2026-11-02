@@ -17,6 +17,7 @@ const TOOLS = [
   ['babel_recent_pages', 'The most recently archived pages (metadata + short preview).', { count: { type: 'number' } }],
   ['babel_verify_ledger', 'Verify the append-only hash chain of the generation ledger.', {}],
   ['babel_possibility', 'Theoretical odds/time to generate an exact string (not archive data).', { query: { type: 'string' } }, ['query']],
+  ['babel_smiley_progress', 'Progress of the exact-smiley hunt (local or GitHub Actions): percent, estimate, whether it finished. Works without the app open; needs the progress server (node ~/babel/progress/progress-server.mjs).', {}],
   ['babel_control', 'Pause/resume generation or set events/sec. Only works if the user enabled agent control in The Origin.', { running: { type: 'boolean' }, rate: { type: 'number' } }],
 ].map(([name, description, properties, required]) => ({ name, description, inputSchema: { type: 'object', properties, required: required || [] } }));
 
@@ -33,6 +34,7 @@ async function rpc(m) {
   if (method === 'tools/list') return ok({ tools: TOOLS });
   if (method === 'tools/call') {
     const t = TOOLS.find((x) => x.name === params?.name); if (!t) return bad(-32602, 'unknown tool');
+    if (t.name === 'babel_smiley_progress') { try { const r = await (await fetch('http://127.0.0.1:8805/api/status')).json(); return ok({ content: [{ type: 'text', text: JSON.stringify(r, null, 2) }] }); } catch { return ok({ isError: true, content: [{ type: 'text', text: 'progress server not running: node ~/babel/progress/progress-server.mjs' }] }); } }
     try { const r = await callBrowser(t.name.replace('babel_', ''), params.arguments || {}); return ok({ content: [{ type: 'text', text: JSON.stringify(r, null, 2) }] }); }
     catch (e) { return ok({ isError: true, content: [{ type: 'text', text: e.message }] }); }
   }
